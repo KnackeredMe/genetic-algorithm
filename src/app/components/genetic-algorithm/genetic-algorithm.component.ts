@@ -39,29 +39,29 @@ export class GeneticAlgorithmComponent implements OnInit{
     this.drawChart();
     this.createPopulation(this.optionsForm.value.individuals)
     for(let i = 0; i < this.optionsForm.value.iterations; i++) {
-      this.inbreeding()
+      this.inbreeding();
     }
-    setTimeout(() => this.showBest(), 1000)
+    setTimeout(() => this.showBest(), 1000);
   }
 
   inbreeding() {
     this.population = this.population.sort((firstIndividual, secondIndividual) => firstIndividual.fitness - secondIndividual.fitness);
     const numberOfEliteIndividuals = Math.floor(this.population.length * this.elitismRate);
-    const regularIndividuals = this.population.slice(numberOfEliteIndividuals, this.population.length);
-    this.shuffleArray(regularIndividuals);
-    for (let i = 0; i < regularIndividuals.length; i += 1) {
-      if (regularIndividuals[i] && regularIndividuals[i + 1]) {
-        regularIndividuals[i] = this.crossover(regularIndividuals[i], regularIndividuals[i + 1]);
-        const mutationResult = this.mutation(regularIndividuals[i]);
-        regularIndividuals[i] = mutationResult ? mutationResult : regularIndividuals[i];
+    const eliteIndividuals = JSON.parse(JSON.stringify(this.population.slice(0, numberOfEliteIndividuals)));
+    this.shuffleArray(eliteIndividuals);
+    for (let i = 0; i < eliteIndividuals.length; i += 1) {
+      if (eliteIndividuals[i] && eliteIndividuals[i + 1]) {
+        eliteIndividuals[i] = this.crossover(eliteIndividuals[i], eliteIndividuals[i + 1]);
+        const mutationResult = this.mutation(eliteIndividuals[i]);
+        eliteIndividuals[i] = mutationResult ? mutationResult : eliteIndividuals[i];
       }
-      if (regularIndividuals[i] && !regularIndividuals[i + 1]) {
-        regularIndividuals[i] = this.crossover(regularIndividuals[i], regularIndividuals[i - 1]);
-        const mutationResult = this.mutation(regularIndividuals[i]);
-        regularIndividuals[i] = mutationResult ? mutationResult : regularIndividuals[i];
+      if (eliteIndividuals[i] && !eliteIndividuals[i + 1]) {
+        eliteIndividuals[i] = this.crossover(eliteIndividuals[i], eliteIndividuals[i - 1]);
+        const mutationResult = this.mutation(eliteIndividuals[i]);
+        eliteIndividuals[i] = mutationResult ? mutationResult : eliteIndividuals[i];
       }
     }
-    this.population = [...this.population.slice(0, numberOfEliteIndividuals), ...regularIndividuals]
+    this.population = [...this.population.slice(0, numberOfEliteIndividuals), ...eliteIndividuals];
   }
 
   crossover(firstParent, secondParent) {
