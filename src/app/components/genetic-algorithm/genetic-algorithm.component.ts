@@ -37,8 +37,8 @@ export class GeneticAlgorithmComponent implements OnInit{
     this.nodes = this.createCities(Number.parseInt(this.optionsForm.value.cities));
     this.createChart(this.nodes);
     this.drawChart();
-    this.createPopulation(50)
-    for(let i = 0; i < 1000; i++) {
+    this.createPopulation(this.optionsForm.value.individuals)
+    for(let i = 0; i < this.optionsForm.value.iterations; i++) {
       this.inbreeding()
     }
     setTimeout(() => this.showBest(), 1000)
@@ -47,15 +47,21 @@ export class GeneticAlgorithmComponent implements OnInit{
   inbreeding() {
     this.population = this.population.sort((firstIndividual, secondIndividual) => firstIndividual.fitness - secondIndividual.fitness);
     const numberOfEliteIndividuals = Math.floor(this.population.length * this.elitismRate);
-    const eliteIndividuals = this.population.slice(0, numberOfEliteIndividuals);
-    this.shuffleArray(eliteIndividuals);
-    for (let i = 0; i < Math.floor(numberOfEliteIndividuals); i++) {
-      if (eliteIndividuals[i] && eliteIndividuals[i + 1]) {
-        this.population[this.population.length - 1] = this.crossover(eliteIndividuals[i], eliteIndividuals[i + 1]);
-        this.population[this.population.length - 2] = this.crossover(eliteIndividuals[i + 1], eliteIndividuals[i]);
-        this.mutation();
+    const regularIndividuals = this.population.slice(numberOfEliteIndividuals, this.population.length);
+    this.shuffleArray(regularIndividuals);
+    for (let i = 0; i < regularIndividuals.length; i += 1) {
+      if (regularIndividuals[i] && regularIndividuals[i + 1]) {
+        regularIndividuals[i] = this.crossover(regularIndividuals[i], regularIndividuals[i + 1]);
+        const mutationResult = this.mutation(regularIndividuals[i]);
+        regularIndividuals[i] = mutationResult ? mutationResult : regularIndividuals[i];
+      }
+      if (regularIndividuals[i] && !regularIndividuals[i + 1]) {
+        regularIndividuals[i] = this.crossover(regularIndividuals[i], regularIndividuals[i - 1]);
+        const mutationResult = this.mutation(regularIndividuals[i]);
+        regularIndividuals[i] = mutationResult ? mutationResult : regularIndividuals[i];
       }
     }
+    this.population = [...this.population.slice(0, numberOfEliteIndividuals), ...regularIndividuals]
   }
 
   crossover(firstParent, secondParent) {
@@ -97,9 +103,9 @@ export class GeneticAlgorithmComponent implements OnInit{
     return {genes: genes, fitness: fitness};
   }
 
-  mutation() {
-    if (Math.random() > this.optionsForm.value.mutationRate) return;
-    const randomIndividual = this.population[Math.floor(Math.random() * this.population.length)];
+  mutation(individual) {
+    if (Math.random() > this.optionsForm.value.mutationRate || !individual) return;
+    const randomIndividual = individual;
     const randomGeneIndexFirst = Math.floor(Math.random() * randomIndividual.genes.length);
     const randomGeneFirstTarget = randomIndividual.genes[randomGeneIndexFirst].data.target;
     const randomGeneFirstSource = randomIndividual.genes[randomGeneIndexFirst].data.source;
@@ -122,6 +128,7 @@ export class GeneticAlgorithmComponent implements OnInit{
     randomIndividual.genes.forEach(gene => {
       randomIndividual.fitness += this.calculateDistance(this.nodes.find(node => node.data.id === gene.data.source), this.nodes.find(node => node.data.id === gene.data.target));
     })
+    return randomIndividual;
   }
 
 
