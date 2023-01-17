@@ -12,6 +12,7 @@ export class GeneticAlgorithmComponent implements OnInit{
   private nodes;
   private population = [];
   private elitismRate = 0.5;
+  private history = [];
   public citiesControl: FormControl = new FormControl<number>(10);
   public individualsControl: FormControl = new FormControl<number>(10);
   public iterationsControl: FormControl = new FormControl<number>(10);
@@ -34,6 +35,7 @@ export class GeneticAlgorithmComponent implements OnInit{
     this.cy = null;
     this.nodes = null;
     this.population = [];
+    this.history = [];
     this.nodes = this.createCities(Number.parseInt(this.optionsForm.value.cities));
     this.createChart(this.nodes);
     this.drawChart();
@@ -46,6 +48,7 @@ export class GeneticAlgorithmComponent implements OnInit{
 
   inbreeding() {
     this.population = this.population.sort((firstIndividual, secondIndividual) => firstIndividual.fitness - secondIndividual.fitness);
+    this.history.push(JSON.parse(JSON.stringify(this.population[0])));
     const numberOfEliteIndividuals = Math.floor(this.population.length * this.elitismRate);
     const eliteIndividuals = JSON.parse(JSON.stringify(this.population.slice(0, numberOfEliteIndividuals)));
     this.shuffleArray(eliteIndividuals);
@@ -88,47 +91,39 @@ export class GeneticAlgorithmComponent implements OnInit{
         }
       }
     }
-    const genes = [];
-    let fitness = 0;
-    for (let i = 0; i < child.length; i++) {
-      if (child[i]) {
-        fitness += this.calculateDistance(this.nodes.find(node => node.data.id === child[child.length - 1]), this.nodes.find(node => node.data.id === child[i]));
-      }
-      if (i === 0) {
-        genes.push({ data: { id: `${child[child.length - 1]}-${child[i]}`, source: `${child[child.length - 1]}`, target: `${child[i]}` }});
-        continue;
-      }
-      genes.push({ data: { id: `${child[i - 1]}-${child[i]}`, source: `${child[i - 1]}`, target: `${child[i]}` }});
-    }
-    return {genes: genes, fitness: fitness};
+    return this.convertToGraphRepresentation(child);
   }
 
   mutation(individual) {
-    if (Math.random() > this.optionsForm.value.mutationRate || !individual) return;
-    const randomIndividual = individual;
-    const randomGeneIndexFirst = Math.floor(Math.random() * randomIndividual.genes.length);
-    const randomGeneFirstTarget = randomIndividual.genes[randomGeneIndexFirst].data.target;
-    const randomGeneFirstSource = randomIndividual.genes[randomGeneIndexFirst].data.source;
-    const randomGeneIndexSecond = Math.floor(Math.random() * randomIndividual.genes.length);
-    const randomGeneSecondTarget = randomIndividual.genes[randomGeneIndexSecond].data.target;
-    const randomGeneSecondSource = randomIndividual.genes[randomGeneIndexSecond].data.source;
-    const firstEdgeId = `#${randomIndividual.genes[randomGeneIndexFirst].data.source}-${randomIndividual.genes[randomGeneIndexFirst].data.target}`
-    const secondEdgeId = `#${randomIndividual.genes[randomGeneIndexSecond].data.source}-${randomIndividual.genes[randomGeneIndexSecond].data.target}`
-    this.cy.remove(firstEdgeId);
-    this.cy.remove(secondEdgeId);
-    randomIndividual.genes[randomGeneIndexFirst].data.target = JSON.parse(JSON.stringify(randomGeneSecondTarget));
-    randomIndividual.genes[randomGeneIndexFirst].data.source = JSON.parse(JSON.stringify(randomGeneSecondSource));
-    randomIndividual.genes[randomGeneIndexFirst].data.id = `${randomIndividual.genes[randomGeneIndexFirst].data.source}-${randomIndividual.genes[randomGeneIndexFirst].data.target}`
-    randomIndividual.genes[randomGeneIndexSecond].data.target = JSON.parse(JSON.stringify(randomGeneFirstTarget));
-    randomIndividual.genes[randomGeneIndexSecond].data.source = JSON.parse(JSON.stringify(randomGeneFirstSource));
-    randomIndividual.genes[randomGeneIndexSecond].data.id = `${randomIndividual.genes[randomGeneIndexSecond].data.source}-${randomIndividual.genes[randomGeneIndexSecond].data.target}`
-    this.addEdge(randomIndividual.genes[randomGeneIndexFirst], this.generateHex());
-    this.addEdge(randomIndividual.genes[randomGeneIndexSecond], this.generateHex());
-    randomIndividual.fitness = 0
-    randomIndividual.genes.forEach(gene => {
-      randomIndividual.fitness += this.calculateDistance(this.nodes.find(node => node.data.id === gene.data.source), this.nodes.find(node => node.data.id === gene.data.target));
-    })
-    return randomIndividual;
+    const numericForm = individual.genes.map(el => el.data.target);
+    for (let i = 0; i < numericForm.length; i++) {
+      let rand = Math.random();
+      if (rand < Number.parseFloat(this.optionsForm.value.mutationRate)) {
+        let swapIndex = Math.floor(Math.random() * numericForm.length);
+        let temp = numericForm[i];
+        numericForm[i] = numericForm[swapIndex];
+        numericForm[swapIndex] = temp;
+      } else {
+        return null;
+      }
+    }
+    return this.convertToGraphRepresentation(numericForm);
+  }
+
+  convertToGraphRepresentation(numericForm) {
+    const genes = [];
+    let fitness = 0;
+    for (let i = 0; i < numericForm.length; i++) {
+      if (numericForm[i]) {
+        fitness += this.calculateDistance(this.nodes.find(node => node.data.id === numericForm[numericForm.length - 1]), this.nodes.find(node => node.data.id === numericForm[i]));
+      }
+      if (i === 0) {
+        genes.push({ data: { id: `${numericForm[numericForm.length - 1]}-${numericForm[i]}`, source: `${numericForm[numericForm.length - 1]}`, target: `${numericForm[i]}` }});
+        continue;
+      }
+      genes.push({ data: { id: `${numericForm[i - 1]}-${numericForm[i]}`, source: `${numericForm[i - 1]}`, target: `${numericForm[i]}` }});
+    }
+    return {genes: genes, fitness: fitness};
   }
 
 
@@ -198,7 +193,7 @@ export class GeneticAlgorithmComponent implements OnInit{
 
   showBest() {
     this.population = this.population.sort((firstIndividual, secondIndividual) => firstIndividual.fitness - secondIndividual.fitness);
-    console.log(this.population[0]);
+    console.log(this.history);
     let i = 0;
     const highlightNextEle = () => {
       if (i < this.population[0].genes.length) {
@@ -243,7 +238,7 @@ export class GeneticAlgorithmComponent implements OnInit{
         .style({
           'curve-style': 'bezier',
           'target-arrow-shape': 'triangle',
-          'width': 4,
+          'width': 2,
           'line-color': edgeColor,
           'target-arrow-color': edgeColor
         })
