@@ -24,7 +24,7 @@ mat-button-toggle-group {
 }
 
 mat-button-toggle {
-  width: 70px;
+  width: 52px;
   height: 70px;
   display: flex;
 }
@@ -35,7 +35,7 @@ h3 {
 
 .mat-mdc-button {
   margin-top: 20px;
-  width: 355px;
+  width: 265px;
   height: 70px;
   background: #FFFFFF;
 }
