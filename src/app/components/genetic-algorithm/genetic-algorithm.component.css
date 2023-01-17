@@ -1,0 +1,41 @@
+.wrapper {
+  display: flex;
+}
+.menu {
+  background: cadetblue;
+  width: 20%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 30px 0 0 30px
+}
+
+.graph {
+  width: 80%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0
+}
+
+mat-button-toggle-group {
+  margin-bottom: 20px;
+}
+
+mat-button-toggle {
+  width: 70px;
+  height: 70px;
+  display: flex;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+.mat-mdc-button {
+  margin-top: 20px;
+  width: 355px;
+  height: 70px;
+  background: #FFFFFF;
+}

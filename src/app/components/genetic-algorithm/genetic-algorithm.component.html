@@ -1,0 +1,41 @@
+<div class="wrapper">
+  <div class="menu">
+    <form [formGroup]="optionsForm">
+      <h3>Nodes</h3>
+      <mat-button-toggle-group formControlName="cities">
+        <mat-button-toggle value="5">5</mat-button-toggle>
+        <mat-button-toggle value="10">10</mat-button-toggle>
+        <mat-button-toggle value="20">20</mat-button-toggle>
+        <mat-button-toggle value="50">50</mat-button-toggle>
+        <mat-button-toggle value="100">100</mat-button-toggle>
+      </mat-button-toggle-group>
+      <h3>Individuals</h3>
+      <mat-button-toggle-group formControlName="individuals">
+        <mat-button-toggle value="5">5</mat-button-toggle>
+        <mat-button-toggle value="10">10</mat-button-toggle>
+        <mat-button-toggle value="20">20</mat-button-toggle>
+        <mat-button-toggle value="50">50</mat-button-toggle>
+        <mat-button-toggle value="100">100</mat-button-toggle>
+      </mat-button-toggle-group>
+      <h3>Iterations</h3>
+      <mat-button-toggle-group formControlName="iterations">
+        <mat-button-toggle value="10">10</mat-button-toggle>
+        <mat-button-toggle value="50">50</mat-button-toggle>
+        <mat-button-toggle value="100">100</mat-button-toggle>
+        <mat-button-toggle value="500">500</mat-button-toggle>
+        <mat-button-toggle value="1000">1000</mat-button-toggle>
+      </mat-button-toggle-group>
+      <h3>Mutation rate</h3>
+      <mat-button-toggle-group formControlName="mutationRate">
+        <mat-button-toggle value="0">0</mat-button-toggle>
+        <mat-button-toggle value="0.1">0.1</mat-button-toggle>
+        <mat-button-toggle value="0.2">0.2</mat-button-toggle>
+        <mat-button-toggle value="0.3">0.3</mat-button-toggle>
+        <mat-button-toggle value="0.5">0.5</mat-button-toggle>
+      </mat-button-toggle-group>
+      <button mat-button (click)="run()">Run</button>
+
+    </form>
+  </div>
+  <div id="graph" class="graph"></div>
+</div>
